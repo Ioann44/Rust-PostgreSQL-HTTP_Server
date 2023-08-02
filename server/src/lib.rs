@@ -6,7 +6,7 @@ pub mod schema;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenvy::dotenv;
-use models::User;
+use models::{NewUser, User};
 
 use std::env;
 
@@ -18,14 +18,12 @@ pub fn establish_connection() -> PgConnection {
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
-use self::models::NewUser;
-
 pub fn create_user(conn: &mut PgConnection, name: String, favorite_color: String) -> User {
     use crate::schema::users;
 
     let new_user = NewUser {
         name,
-        favorite_color
+        favorite_color,
     };
 
     diesel::insert_into(users::table)

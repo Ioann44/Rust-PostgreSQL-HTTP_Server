@@ -1,5 +1,5 @@
-use server::models::*;
 use diesel::prelude::*;
+use server::models::*;
 
 fn main() {
     use server::schema::users::dsl::*;
@@ -11,11 +11,6 @@ fn main() {
         .load(connection)
         .expect("Error loading posts");
 
-    println!("Displaying {} users", results.len());
-    for user in results {
-		let mut fav_col = user.favorite_color;
-        println!("{}", user.name);
-        println!("-----------\n");
-        println!("{}", fav_col.get_or_insert("None".to_string()));
-       }
+    let serialized_result = serde_json::to_string_pretty(&results).expect("Serialization failed");
+    println!("{}", serialized_result);
 }
