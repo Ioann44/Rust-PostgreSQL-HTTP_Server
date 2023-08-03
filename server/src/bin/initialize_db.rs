@@ -10,7 +10,7 @@ fn main() {
         ("cars", "brand VARCHAR, model VARCHAR, year SMALLINT", db_data::CARS_DATA)
     ] {
         // Удаление таблиц
-        let _ = client.batch_execute(&format!("DROP TABLE IF EXISTS {table_name};"))
+        let _ = client.batch_execute(&format!("DROP TABLE IF EXISTS {table_name}"))
             .expect(&format!("Table {table_name} not deleted"));
 
         // Создание их заново
