@@ -31,8 +31,8 @@ pub fn get_json_from_table_async(table_name: &str) -> String {
 pub fn get_json_from_table(table_name: &str) -> String {
     let mut client = establish_connection();
 
-    let query_result = client.query(
-        &format!("select row_to_json({table_name}) from {table_name}"),
+    let query_result = client.query_one(
+        &format!("select array_to_json(array_agg(row_to_json({table_name}))) from {table_name}"),
         &[],
     );
 
@@ -40,13 +40,9 @@ pub fn get_json_from_table(table_name: &str) -> String {
 
     // В этом месте обрабатывается запрос к несуществующей таблице
     match query_result {
-        Ok(rows) => {
-            let mut json_array: Vec<serde_json::Value> = vec![];
-            for row in rows {
-                json_array.push(serde_json::from_value(row.get(0)).unwrap());
-            }
-
-            json_string = serde_json::to_string(&json_array)
+        Ok(row) => {
+            let json_value: serde_json::Value = serde_json::from_value(row.get(0)).unwrap();
+            json_string = serde_json::to_string(&json_value)
                 .expect("Error serializing json vector to string");
         }
         Err(_error) => {
