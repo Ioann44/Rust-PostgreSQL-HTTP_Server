@@ -13,7 +13,7 @@ pub fn contains_valid_characters(s: &str) -> bool {
     s.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
 }
 
-pub fn get_json_from_table_async(table_name: &str) -> String {
+pub fn get_json_from_table_async(table_name: &str) -> (String, bool) {
     // Создаем канал для передачи данных между основным потоком и дочерним потоком
     let (sender, receiver) = mpsc::channel();
 
@@ -28,15 +28,16 @@ pub fn get_json_from_table_async(table_name: &str) -> String {
     return data;
 }
 
-pub fn get_json_from_table(table_name: &str) -> String {
+pub fn get_json_from_table(table_name: &str) -> (String, bool) {
     let mut client = establish_connection();
 
     let query_result = client.query_one(
-        &format!("select array_to_json(array_agg(row_to_json({table_name}))) from {table_name}"),
+        &format!("select json_agg(row_to_json({table_name})) from {table_name}"),
         &[],
     );
 
     let json_string;
+    let mut result_received = false;
 
     // В этом месте обрабатывается запрос к несуществующей таблице
     match query_result {
@@ -44,11 +45,12 @@ pub fn get_json_from_table(table_name: &str) -> String {
             let json_value: serde_json::Value = serde_json::from_value(row.get(0)).unwrap();
             json_string = serde_json::to_string(&json_value)
                 .expect("Error serializing json vector to string");
+            result_received = true;
         }
         Err(_error) => {
-            json_string = "Where is no table with this name".to_string();
+            json_string = "".to_string();
         }
     };
 
-    return json_string;
+    return (json_string, result_received);
 }

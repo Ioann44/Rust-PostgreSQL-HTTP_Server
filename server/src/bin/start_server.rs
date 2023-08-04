@@ -1,6 +1,6 @@
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{server::Server, Body, Request, Response};
-use server::{contains_valid_characters, get_json_from_table_async};
+use server::get_json_from_table_async;
 use std::convert::Infallible;
 use std::env;
 use std::net::SocketAddr;
@@ -8,24 +8,21 @@ use std::net::SocketAddr;
 async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let path = req.uri().path();
 
-    // Table prefix handler
-    if path.starts_with("/table/") {
-        let table_name = path
-            .strip_prefix("/table/")
-            .expect("Error with getting path suffix");
-
-        // Проверка на отсутствие символов, кроме букв, цифр и нижнего подчёркивания
-        if !contains_valid_characters(table_name) {
-            return Ok(Response::new(Body::from("Wrong table name format")));
+    // Регулярное выражение корректного запроса
+    let re = regex::Regex::new(r"^/table/([A-Za-z0-9_]+)/?$").unwrap();
+    if let Some(captures) = re.captures(path) {
+        if let Some(table_name) = captures.get(1) {
+            // Получение результата запроса с bool значением "успеха"
+            let (json_data, result_received) = get_json_from_table_async(table_name.as_str());
+            if result_received {
+                // Отправка результата
+                let response = Response::builder()
+                    .header("Content-Type", "application/json")
+                    .body(Body::from(json_data))
+                    .unwrap();
+                return Ok(response);
+            }
         }
-
-        // let json_data = get_json_from_table(table_name);
-        let json_data = get_json_from_table_async(table_name);
-        let mut response = Response::new(Body::from(json_data));
-        let headers = response.headers_mut();
-        headers.insert("Content-Type", "application/json".parse().unwrap());
-
-        return Ok(response);
     }
 
     // 404 error
