@@ -9,6 +9,6 @@ $ cargo run --bin initialize_users
 Старт сервера, запуск из WSL в папке server
 $ cargo run --bin start_server
 
-http://localhost:3000/table/users
-http://localhost:3000/table/cats
-http://localhost:3000/table/cars
+http://127.0.0.1:3000/table/users
+http://127.0.0.1:3000/table/cats
+http://127.0.0.1:3000/table/cars

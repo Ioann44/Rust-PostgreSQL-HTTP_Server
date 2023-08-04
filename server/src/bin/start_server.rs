@@ -5,6 +5,13 @@ use std::convert::Infallible;
 use std::env;
 use std::net::SocketAddr;
 
+async fn shutdown_signal() {
+    // Wait for the CTRL+C signal
+    tokio::signal::ctrl_c()
+        .await
+        .expect("failed to install CTRL+C signal handler");
+}
+
 async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let path = req.uri().path();
 
@@ -48,7 +55,9 @@ async fn main() {
     let make_service = make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(handle)) });
 
     // Then bind and serve...
-    let server = Server::bind(&addr).serve(make_service);
+    let server = Server::bind(&addr)
+        .serve(make_service)
+        .with_graceful_shutdown(shutdown_signal()); // Have no effect if send request on localhost instead of 127.0.0.1
     println!("Server started on port {port}");
 
     // And run forever...

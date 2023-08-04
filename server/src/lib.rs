@@ -9,10 +9,6 @@ pub fn establish_connection() -> Client {
     Client::connect(&database_url, NoTls).expect("Connection to DB failed")
 }
 
-pub fn contains_valid_characters(s: &str) -> bool {
-    s.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-}
-
 pub fn get_json_from_table_async(table_name: &str) -> (String, bool) {
     // Создаем канал для передачи данных между основным потоком и дочерним потоком
     let (sender, receiver) = mpsc::channel();
@@ -25,6 +21,7 @@ pub fn get_json_from_table_async(table_name: &str) -> (String, bool) {
     });
 
     let data = receiver.recv().unwrap();
+
     return data;
 }
 
