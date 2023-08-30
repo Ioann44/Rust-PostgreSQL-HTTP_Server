@@ -4,7 +4,7 @@ services:
 
   db:
     env_file:
-      - ./.env
+      - .env
     container_name: $DOCKER_BACKEND_DB_CONTAINER_NAME
     image: postgres:${POSTGRES_VERSION}
     environment:

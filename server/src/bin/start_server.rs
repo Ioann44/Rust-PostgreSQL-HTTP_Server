@@ -42,7 +42,7 @@ async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
 
 #[tokio::main]
 async fn main() {
-    dotenvy::from_path(".env").ok();
+    dotenvy::from_path("../docker/.env").ok();
     let port = env::var("SERVER_PORT")
         .expect("SERVER_PORT must be set")
         .parse::<u16>()
